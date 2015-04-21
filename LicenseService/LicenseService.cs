@@ -28,6 +28,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
 using System.Xml;
 using System.Xml.Serialization;
+using Dover.Framework.Model.License;
 
 namespace Dover.LicenseGenerator
 {
@@ -59,41 +60,6 @@ namespace Dover.LicenseGenerator
             return stream;
         }
 
-        private bool CheckToken(string assembly, byte[] expectedToken)
-        {
-            if (assembly == null)
-                throw new ArgumentNullException("assembly");
-            if (expectedToken == null)
-                throw new ArgumentNullException("expectedToken");
-
-            try
-            {
-                // Get the public key token of the given assembly 
-                Assembly asm = Assembly.LoadFrom(assembly);
-                byte[] asmToken = asm.GetName().GetPublicKeyToken();
-
-                // Compare it to the given token
-                if (asmToken.Length != expectedToken.Length)
-                    return false;
-
-                for (int i = 0; i < asmToken.Length; i++)
-                    if (asmToken[i] != expectedToken[i])
-                        return false;
-
-                return true;
-            }
-            catch (System.IO.FileNotFoundException)
-            {
-                // couldn't find the assembly
-                return false;
-            }
-            catch (BadImageFormatException)
-            {
-                // the given file couldn't get through the loader
-                return false;
-            }
-        }
-
         public bool CheckSignature(string xml, RSACryptoServiceProvider key)
         {
             XmlDocument xmlDoc = new XmlDocument();
@@ -113,11 +79,8 @@ namespace Dover.LicenseGenerator
             return false;
         }
 
-        public string GenerateLicense(List<LicenseModule> modules, RSACryptoServiceProvider key)
+        public string GenerateLicense(LicenseHeader license, RSACryptoServiceProvider key)
         {
-            License license = new License();
-            license.Items = modules.ToArray();
-
             var listSerializer = new XmlSerializer(license.GetType());
             var xnameSpace = new XmlSerializerNamespaces();
             xnameSpace.Add("", "");
