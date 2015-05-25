@@ -19,14 +19,12 @@
  * 
  */
 using System;
-using System.Text;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Dover.LicenseGenerator;
-using System.Xml;
-using System.IO;
 using System.Security.Cryptography;
+using System.Xml;
+using Dover.Framework.Model.License;
+using Dover.LicenseGenerator;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Tests
 {
@@ -44,7 +42,7 @@ namespace Tests
             publicKey.FromXmlString(key.ToXmlString(false));
         }
 
-        private List<LicenseModule> CreateModulesTemplate()
+        private LicenseHeader CreateModulesTemplate()
         {
             List<LicenseModule> modules = new List<LicenseModule>();
             LicenseModule module = new LicenseModule();
@@ -58,24 +56,15 @@ namespace Tests
             module.ExpirationDate = new DateTime(2015, 12, 31);
             modules.Add(module);
 
-            return modules;
+            LicenseHeader header = new LicenseHeader();
+            header.InstallNumber = "123456";
+            header.SystemNumber = "54321";
+            header.LicenseNamespace = "TEST";
+            header.Items = modules;
+
+            return header;
         }
 
-        [TestMethod]
-        public void CreateSignedLicenseAndSave()
-        {
-            // Este teste e usado para gerar um arquivo valido para testes no ambiente de testes.
-            List<LicenseModule> modules = new List<LicenseModule>();
-            LicenseModule module = new LicenseModule();
-            module.Description = "Treinamento";
-            module.Name = "Treinamento";
-            module.ExpirationDate = new DateTime(2020, 12, 31);
-            modules.Add(module);
-
-            LicenseService service = new LicenseService();
-            string xml = service.GenerateLicense(modules, key);
-            File.WriteAllText(Path.Combine("c:\\temp", "License.xml"), xml);
-        }
 
         [TestMethod]
         public void CreateSignedLicense()
